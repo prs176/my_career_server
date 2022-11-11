@@ -9,7 +9,7 @@ router.use(cors({ credentials: true }));
 
 router.get("/:userId", async (req, res, next) => {
   try {
-    const records = await Record.findAll({
+    var records = await Record.findAll({
       attributes: [
         "id",
         "type",
@@ -24,6 +24,26 @@ router.get("/:userId", async (req, res, next) => {
         "identifier",
       ],
       where: { UserId: req.params.userId },
+      include: [{ model: Log, attributes: ["id"] }],
+    });
+
+    records = records.map((record) => {
+      const count = record.Logs.length;
+
+      return {
+        id: record.id,
+        type: record.type,
+        name: record.name,
+        role: record.role,
+        period: record.period,
+        description: record.description,
+        department: record.department,
+        from: record.from,
+        start: record.start,
+        end: record.end,
+        identifier: record.identifier,
+        count: count,
+      };
     });
 
     res.status(200).json({
