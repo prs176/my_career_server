@@ -7,6 +7,24 @@ const router = express.Router();
 
 router.use(cors({ credentials: true }));
 
+router.get("/:recordId", verifyToken, async (req, res, next) => {
+  try {
+    const logs = await Log.findAll({
+      attributes: ["id", "title", "intro", "period", "learning", "contribution", "overcame", "etc"],
+      where: { RecordId: req.params.recordId },
+    });
+
+    res.status(200).json({
+      code: 200,
+      message: "로그가 조회되었습니다.",
+      response: logs,
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
 router.post("/:recordId", verifyToken, async (req, res, next) => {
   const { title, intro, period, learning, contribution, overcame, etc } = req.body;
   try {

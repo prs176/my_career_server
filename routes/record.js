@@ -24,21 +24,6 @@ router.get("/:userId", async (req, res, next) => {
         "identifier",
       ],
       where: { UserId: req.params.userId },
-      include: [
-        {
-          model: Log,
-          attributes: [
-            "id",
-            "title",
-            "intro",
-            "period",
-            "learning",
-            "contribution",
-            "overcame",
-            "etc",
-          ],
-        },
-      ],
     });
 
     res.status(200).json({

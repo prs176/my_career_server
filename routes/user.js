@@ -99,6 +99,19 @@ router.get("/search/:keyword", async (req, res, next) => {
   }
 });
 
+router.get("/myid", verifyToken, (req, res, next) => {
+  try {
+    res.status(200).json({
+      code: 200,
+      message: "사용자 아이디가 조회되었습니다.",
+      response: req.decoded.id,
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
 router.get("/:id", verifyOptionalToken, async (req, res, next) => {
   try {
     const user = await User.findOne({
@@ -108,10 +121,10 @@ router.get("/:id", verifyOptionalToken, async (req, res, next) => {
     });
     if (user) {
       const good = user.GoodMarkUsers.length;
-      const isMine = req.decoded !== undefined && req.decoded === user.id;
+      const isMine = req.decoded !== undefined && req.decoded.id === user.id;
       const isGood =
         req.decoded !== undefined &&
-        user.GoodMarkUsers.map((user) => user.id).include(req.decoded.id);
+        user.GoodMarkUsers.map((user) => user.id).includes(req.decoded.id);
 
       res.status(200).json({
         code: 200,
@@ -148,6 +161,7 @@ router.post("/good/:id", verifyToken, async (req, res, next) => {
       res.json({
         code: 201,
         message: "좋아요를 표시했습니다.",
+        response: user,
       });
     } else {
       res.status(404).json({
@@ -233,6 +247,35 @@ router.post("/login", async (req, res, next) => {
       res.status(401).json({
         code: 401,
         message: "가입되지 않은 아이디입니다.",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
+router.put("/", verifyToken, async (req, res, next) => {
+  const { name, birth, intro } = req.body;
+  try {
+    const user = await User.findOne({
+      where: { id: req.decoded.id },
+    });
+    if (user) {
+      await user.update({
+        name,
+        birth,
+        intro,
+      });
+
+      res.status(201).json({
+        code: 201,
+        message: "사용자 정보가 수정되었습니다.",
+      });
+    } else {
+      res.status(404).json({
+        code: 404,
+        message: "존재하지 않는 사용자입니다.",
       });
     }
   } catch (err) {
